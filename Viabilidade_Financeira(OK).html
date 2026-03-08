@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Negócio Profissional</title>
+
+    <!-- Bibliotecas Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --azul-escuro: #1E3A8A;
+            --cor-tutorial: #F59E0B;
+            --cor-investimento: #2563EB;
+            --cor-fixos: #DC2626;
+            --cor-vendas: #059669;
+            --cor-concorrencia: #0EA5E9;
+            --cor-resultado: #7C3AED;
+            --cinza-claro: #F1F5F9;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--cinza-claro); margin: 0; padding: 20px; color: #1E293B; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 30px; position: relative; }
+
+        header { border-bottom: 2px solid #E2E8F0; margin-bottom: 25px; padding-bottom: 15px; }
+        .info-topo { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .campo-topo { display: flex; flex-direction: column; }
+        .campo-topo label { font-size: 0.85rem; font-weight: bold; color: #475569; margin-bottom: 4px; }
+        .campo-topo input { padding: 10px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.95rem; }
+        .credito-fixo { font-size: 0.75rem; color: #64748B; margin-top: 10px; font-style: italic; }
+
+        .abas { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .aba-btn { flex: 1; min-width: 120px; padding: 12px; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; color: white; opacity: 0.8; transition: 0.3s; font-size: 0.85rem; }
+        .aba-btn.ativa { opacity: 1; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); outline: 2px solid #000; }
+        .btn-tut { background: var(--cor-tutorial); }
+        .btn-inv { background: var(--cor-investimento); }
+        .btn-fix { background: var(--cor-fixos); }
+        .btn-ven { background: var(--cor-vendas); }
+        .btn-con { background: var(--cor-concorrencia); }
+        .btn-res { background: var(--cor-resultado); }
+
+        .conteudo-aba { display: none; animation: aparecer 0.3s ease; }
+        .conteudo-aba.ativa { display: block; }
+        .frase-orientadora { font-style: italic; color: #475569; margin-bottom: 15px; display: block; font-weight: 500; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+        th { background: #F8FAFC; padding: 10px; text-align: left; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #E2E8F0; }
+        td { padding: 8px; border-bottom: 1px solid #F1F5F9; }
+        input[type="number"], input[type="text"], select { width: 100%; padding: 6px; border: 1px solid #E2E8F0; border-radius: 4px; }
+
+        .tfoot-total { background: #F1F5F9; font-weight: bold; }
+        .btn-add { background: #334155; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+
+        .ajuda { display: inline-block; width: 16px; height: 16px; background: #94A3B8; color: white; border-radius: 50%; text-align: center; font-size: 11px; cursor: help; line-height: 16px; margin-left: 4px; }
+
+        .painel-resultado { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card-res { padding: 20px; border-radius: 8px; color: white; text-align: center; }
+        .parecer-caixa { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 20px; border-radius: 8px; border-left: 6px solid var(--cor-resultado); }
+
+        @keyframes aparecer { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media print { .abas, .btn-add, .btn-del { display: none !important; } }
+
+        /* Botão PDF */
+        .btn-download-pdf {
+            background:#1E293B;
+            color: white;
+            padding:12px 25px;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+            font-weight:bold;
+            font-size:0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1 style="margin:0; color: var(--azul-escuro);">Relatório de Viabilidade de Negócio</h1>
+        <div class="info-topo">
+            <div class="campo-topo">
+                <label>Nome do Empreendimento</label>
+                <input type="text" id="campoEmpresa" placeholder="Ex: Horta Comunitária">
+            </div>
+            <div class="campo-topo">
+                <label>Empreendedor(as)</label>
+                <input type="text" id="campoDono" placeholder="Nomes dos sócios">
+            </div>
+            <div class="campo-topo">
+                <label>Contato Oficial (e-mail ou WhatsApp)</label>
+                <input type="text" id="campoContatoOficial">
+            </div>
+            <div class="campo-topo">
+                <label>Responsável pelo preenchimento</label>
+                <input type="text" id="campoResponsavel">
+            </div>
+            <div class="campo-topo">
+                <label>Contato do responsável</label>
+                <input type="text" id="campoContatoResp">
+            </div>
+        </div>
+        <div class="credito-fixo">Formulário criado por João Batista — jbatist7@gmail.com</div>
+    </header>
+
+    <p class="texto-menu">
+        Navegue pelo menu e preencha com os dados dos seus produtos. Na aba "Viabilidade", no canto inferior direito, clic no botão
+        <strong>Baixar Relatório PDF</strong> para gerar o relatório do seu negócio.
+    </p>
+
+    <nav class="abas">
+        <button class="aba-btn btn-tut ativa" onclick="mudarAba('tutorial', event)">📖 Tutorial</button>
+        <button class="aba-btn btn-inv" onclick="mudarAba('investimento', event)">💰 Investimento</button>
+        <button class="aba-btn btn-fix" onclick="mudarAba('fixos', event)">🏢 Custos Fixos</button>
+        <button class="aba-btn btn-ven" onclick="mudarAba('vendas', event)">🏷️ Vendas e Margem</button>
+        <button class="aba-btn btn-con" onclick="mudarAba('concorrencia', event)">🤝 Concorrência</button>
+        <button class="aba-btn btn-res" onclick="mudarAba('resultado', event)">📊 Viabilidade</button>
+    </nav>
+
+    <!-- ABA 0: TUTORIAL -->
+    <section id="tutorial" class="conteudo-aba ativa">
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:30px; border-radius:12px; line-height:1.6;">
+            <h2 style="color:#0F172A; margin-top:0;">Manual de Análise de Viabilidade Econômica</h2>
+            <p style="color:#334155;">
+                Este manual foi desenvolvido para <b>orientar o empreendedor iniciante</b> no preenchimento correto do formulário e, principalmente,
+                para <b>compreender os conceitos econômicos e financeiros</b> que fundamentam a análise de viabilidade de um negócio.
+            </p>
+
+            <p style="color:#334155;">
+                A proposta não é apenas calcular resultados, mas <b>formar capacidade crítica</b> para tomada de decisão, evitando erros comuns na precificação,
+                no controle de custos e na avaliação do mercado.
+            </p>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">1. Investimento Inicial e Capital de Giro</h3>
+            <div style="background:#FFFBEB; border-left:5px solid #F59E0B; padding:20px; border-radius:8px;">
+                <p><b>Investimento Inicial</b> corresponde aos recursos necessários para <b>iniciar o negócio</b>, antes da primeira venda.</p>
+                <ul>
+                    <li>máquinas e equipamentos</li>
+                    <li>ferramentas</li>
+                    <li>mobiliário</li>
+                    <li>adequações do espaço</li>
+                    <li>estoque inicial</li>
+                </ul>
+                <p style="margin-bottom:0;"><b>Atenção:</b> investimento não é custo mensal. Trata-se de aplicação de capital que será recuperada ao longo do tempo.</p>
+            </div>
+
+            <p style="margin-top:15px;"><b>Capital de Giro</b> é o dinheiro necessário para <b>manter o negócio funcionando</b> até que as receitas sejam suficientes para cobrir os gastos.</p>
+            <ul>
+                <li>pagamento de fornecedores</li>
+                <li>salários</li>
+                <li>água, energia, internet</li>
+                <li>reposição de estoque</li>
+            </ul>
+
+            <p style="color:#475569;"><i>Um negócio pode ser lucrativo no papel e ainda assim quebrar por falta de capital de giro.</i></p>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">2. Custos Fixos</h3>
+            <div style="background:#ECFEFF; border-left:5px solid #06B6D4; padding:20px; border-radius:8px;">
+                <p><b>Custos fixos</b> são aqueles que <b>existem independentemente do volume de vendas</b>.</p>
+                <ul>
+                    <li>aluguel</li>
+                    <li>salários administrativos</li>
+                    <li>internet e telefonia</li>
+                    <li>contabilidade</li>
+                    <li>seguro</li>
+                    <li>água</li>
+                </ul>
+                <p style="margin-bottom:0;"><b>Energia elétrica:</b> a taxa mínima contratada é considerada custo fixo.</p>
+            </div>
+
+            <p style="margin-top:15px;">Custos fixos <b>não entram no cálculo da margem de contribuição</b>, mas precisam ser totalmente cobertos por ela para que o negócio seja sustentável.</p>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">3. Custos Variáveis e Custo Unitário</h3>
+            <div style="background:#F0FDF4; border-left:5px solid #22C55E; padding:20px; border-radius:8px;">
+                <p><b>Custos variáveis</b> são aqueles que <b>aumentam ou diminuem conforme a produção ou as vendas</b>.</p>
+                <ul>
+                    <li>matéria-prima</li>
+                    <li>mercadorias para revenda</li>
+                    <li>embalagens</li>
+                    <li>comissões</li>
+                    <li>energia, água e outros insumos consumidos diretamente na produção</li>
+                </ul>
+            </div>
+
+            <p style="margin-top:15px;"><b>Importante:</b> o consumo adicional de energia ou água para produzir deve ser registrado como <b>custo variável</b> na tabela <b>Vendas e Margem</b>.</p>
+
+            <p><b>Rateio de insumos:</b> quando um insumo é adquirido em volume para vários períodos, seu custo deve ser corretamente distribuído.</p>
+
+            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:15px; border-radius:6px;">
+                <p style="margin:0;"><b>Exemplo:</b> compra de matéria-prima por R$ 600 para 6 meses → custo mensal = R$ 100</p>
+            </div>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">4. Preço de Venda</h3>
+            <p>O preço de venda deve ser definido de forma <b>estratégica, realista e sustentável</b>.</p>
+
+            <div style="background:#FFF7ED; border-left:5px solid #FB923C; padding:20px; border-radius:8px;">
+                <p><b>O preço de venda deve ser suficiente para cobrir:</b></p>
+                <ol>
+                    <li>custos variáveis</li>
+                    <li>custos fixos</li>
+                    <li>margem de lucro desejada</li>
+                </ol>
+            </div>
+
+            <p><b>Estrutura conceitual:</b></p>
+            <p style="font-weight:bold;">Preço de Venda ≥ Custos Variáveis + Custos Fixos + Lucro</p>
+
+            <p style="color:#7C2D12;"><b>Atenção:</b> se o preço necessário for superior ao praticado pelo mercado, o modelo de negócio deve ser revisto.</p>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">5. Margem de Contribuição</h3>
+            <div style="background:#EEF2FF; border-left:5px solid #6366F1; padding:20px; border-radius:8px;">
+                <p>A <b>margem de contribuição</b> indica quanto cada produto ou serviço contribui para pagar os custos fixos e gerar lucro.</p>
+                <p><b>Fórmula:</b></p>
+                <p style="font-weight:bold;">Margem de Contribuição = Preço de Venda − Custos Variáveis</p>
+            </div>
+
+            <p>Margem positiva indica sustentabilidade. Margem negativa significa que o negócio perde dinheiro a cada venda.</p>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">6. Concorrência e Avaliação de Mercado</h3>
+            <p>A análise de concorrência permite comparar seu preço com o mercado e avaliar a viabilidade da sua inserção.</p>
+            <ul>
+                <li>Preço abaixo da média → competitivo</li>
+                <li>Preço acima da média → exige diferenciação ou redução de custos</li>
+            </ul>
+
+            <p style="color:#475569;"><i>Uma dependência excessiva de poucos produtos ou preços desalinhados aumenta o risco do empreendimento.</i></p>
+
+            <hr style="margin:30px 0;">
+
+            <h3 style="color:#1E293B;">7. Referências consultadas</h3>
+            <p style="font-size:0.9rem;">
+                MARTINS, Eliseu. <b>Contabilidade de Custos</b>. 11. ed. São Paulo: Atlas, 2018.
+                <a href="https://biblioteca.faculdadeunimed.edu.br/phl84/pdf/Contabilidadedecustos1.pdf" target="_blank" style="color:#2563EB; word-break:break-all;">
+                    https://biblioteca.faculdadeunimed.edu.br/phl84/pdf/Contabilidadedecustos1.pdf
+                </a>
+                <br><br>
+
+                PADOVEZE, Clóvis Luís. <b>Contabilidade Gerencial</b>. Curitiba: IESDE Brasil S.A., 2012. 376 p. ISBN 978-85-387-3145-0.<br>
+                <a href="https://drive.google.com/file/d/1D73YdAMcRVOVkuj_P74OynsRUepWh2nU/view?usp=sharing" target="_blank" style="color:#2563EB; word-break:break-all;">
+                    https://drive.google.com/file/d/1D73YdAMcRVOVkuj_P74OynsRUepWh2nU/view?usp=sharing
+                </a>
+                <br><br>
+
+                SEBRAE. <b>Formação do Preço de Venda</b>. Brasília: SEBRAE, 2021.
+                <a href="https://sebrae.com.br/sites/PortalSebrae/cursosonline/formacao-do-preco-de-venda,7490b8a6a28bb610VgnVCM1000004c00210aRCRD" target="_blank" style="color:#2563EB; word-break:break-all;">
+                    https://sebrae.com.br/sites/PortalSebrae/cursosonline/formacao-do-preco-de-venda,7490b8a6a28bb610VgnVCM1000004c00210aRCRD
+                </a>
+            </p>
+        </div>
+    </section>
+
+    <!-- ABA 1: INVESTIMENTO -->
+    <section id="investimento" class="conteudo-aba">
+        <span class="frase-orientadora">Quanto preciso investir no meu negócio para começar a operar?</span>
+        <table id="tblInvest">
+            <thead>
+                <tr>
+                    <th>Descrição do Item <span class="ajuda" title="Máquinas, equipamentos, móveis, material permanente, reformas, mão-de-obra, estoque de matéria-prima inicial...">?</span></th>
+                    <th width="100">Qtd</th>
+                    <th width="150">Vlr Unit. (R$)</th>
+                    <th width="150">Subtotal</th>
+                    <th width="40"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr class="tfoot-total">
+                    <td colspan="3">TOTAL DO INVESTIMENTO INICIAL</td>
+                    <td id="totInvest">R$ 0,00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="btn-add" onclick="addLinha('tblInvest')">+ Adicionar Item</button>
+    </section>
+
+    <!-- ABA 2: FIXOS -->
+    <section id="fixos" class="conteudo-aba">
+        <span class="frase-orientadora">Quanto o negócio custa para existir, mesmo sem vender nada (custo mensal)?</span>
+        <table id="tblFixos">
+            <thead>
+                <tr>
+                    <th>Categoria da Despesa <span class="ajuda" title="Aluguel, Pro-labore, Internet, parcela do empréstimo, depreciação de equipamento, taxa fixa de água e energia, seguro, folha de pagamento+obrigações sociais, manutenção de patrimônio (imóveis, veículos...)...">?</span></th>
+                    <th width="200">Valor Mensal (R$)</th>
+                    <th width="40"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr class="tfoot-total">
+                    <td>TOTAL DE CUSTOS FIXOS MENSAIS</td>
+                    <td id="totFixos">R$ 0,00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="btn-add" onclick="addLinha('tblFixos')">+ Adicionar Despesa</button>
+    </section>
+
+    <!-- ABA 3: VENDAS -->
+    <section id="vendas" class="conteudo-aba">
+        <span class="frase-orientadora">Quanto cada produto gera de receita e quanto sobra após os CUSTOS VARIÁVEIS (lucro bruto)?</span>
+        <p style="font-size:0.8rem; color:#64748B;">* Se o produto for comprado em volume e vendido por unidade, divida o custo pela quantidade adquirida.</p>
+
+        <table id="tblVendas">
+            <thead>
+                <tr>
+                    <th>Produto/Serviço</th>
+                    <th>Unid. <span class="ajuda" title="Ex: kg, milheiro, pacote.">?</span></th>
+                    <th>
+                        Custo Unit. Ref. (R$)
+                        <span class="ajuda" title="Custo unitário de referência do produto...">?</span>
+                    </th>
+                    <th>
+                        Preço Venda (R$)
+                        <span class="ajuda" title="Preço pelo qual o produto ou serviço será vendido ao cliente...">?</span>
+                    </th>
+                    <th>
+                        Qtd Mensal
+                        <span class="ajuda" title="Quantidade média mensal estimada de unidades vendidas...">?</span>
+                    </th>
+                    <th>
+                        Custo Var. Unit. (R$)
+                        <span class="ajuda" title="Custos de comercialização por unidade...">?</span>
+                    </th>
+                    <th>
+                        Margem Contrib. (R$)
+                        <span class="ajuda" title="Margem de contribuição indica quanto sobra após custos variáveis...">?</span>
+                    </th>
+                    <th>
+                        Part. Margem (%)
+                        <span class="ajuda" title="Percentual de participação de cada produto na margem total.">?</span>
+                    </th>
+                    <th width="40"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr class="tfoot-total">
+                    <td colspan="5">TOTAIS (FATURAMENTO / C. VAR / MARGEM)</td>
+                    <td id="totFat">R$ 0,00</td>
+                    <td id="totMargem">R$ 0,00</td>
+                    <td>100%</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <button class="btn-add" onclick="addLinha('tblVendas')">+ Adicionar Produto</button>
+    </section>
+
+    <!-- ABA 4: CONCORRÊNCIA -->
+    <section id="concorrencia" class="conteudo-aba">
+        <span class="frase-orientadora">Como seu preço se compara aos concorrentes diretos? (Opcional)</span>
+        <table id="tblConc">
+            <thead>
+                <tr>
+                    <th>Produto (Automático)</th>
+                    <th>Seu Preço (R$) <span class="ajuda" title="Preenchido automaticamente a partir de Vendas e Margem.">?</span></th>
+                    <th>Concorrente 1 (R$) <span class="ajuda" title="Preço praticado por um concorrente direto.">?</span></th>
+                    <th>Concorrente 2 (R$) <span class="ajuda" title="Preço praticado por outro concorrente direto.">?</span></th>
+                    <th>Avaliação <span class="ajuda" title="Verifique a oportunidade real de inserção no mercado.">?</span></th>
+                </tr>
+            </thead>
+            <tbody id="corpoConc"></tbody>
+        </table>
+    </section>
+
+    <!-- ABA 5: RESULTADO -->
+    <section id="resultado" class="conteudo-aba">
+        <span class="frase-orientadora">O negócio é viável financeiramente nas condições atuais?</span>
+
+        <div class="painel-resultado">
+            <div class="card-res" style="background:var(--cor-vendas)">
+                Faturamento: <span id="resFat" class="valor-resumo">R$ 0,00</span>
+            </div>
+
+            <div class="card-res" style="background:var(--cor-fixos)">
+                Custo Operacional: <span id="resCustoOp" class="valor-resumo">R$ 0,00</span>
+            </div>
+
+            <div id="cardLucro" class="card-res" style="background:var(--azul-escuro)">
+                Lucro Líquido: <span id="resLucro" class="valor-resumo">R$ 0,00</span>
+            </div>
+
+            <div class="card-res" style="background:#475569">
+                Inv. Inicial: <span id="resInvTotal" class="valor-resumo">R$ 0,00</span>
+            </div>
+
+            <!-- NOVO CARD: PONTO DE EQUILÍBRIO EM R$ -->
+            <div class="card-res" style="background:var(--cor-resultado)">
+                Ponto de Equilíbrio (R$): <span id="resPE" class="valor-resumo">R$ 0,00</span>
+                <div style="font-size:0.75rem; opacity:0.9; margin-top:6px;">
+                    Valor de faturamento necessário para cobrir custos fixos (sem lucro).
+                </div>
+            </div>
+        </div>
+
+        <div class="grade-analise" style="display:grid; grid-template-columns: 1fr 1.5fr; gap:20px;">
+            <div style="background:white; border:1px solid #E2E8F0; padding:15px; border-radius:10px;">
+                <canvas id="graficoPerformance" height="250"></canvas>
+            </div>
+            <div class="parecer-caixa">
+                <h3 style="margin-top:0; color:var(--cor-resultado);">🔍 Parecer Analítico</h3>
+                <div id="textoAnalise">Aguardando dados...</div>
+            </div>
+        </div>
+		
+		
+
+ <div style="text-align:right; margin-top:30px; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+    <button class="btn-download-pdf" onclick="gerarPDF()">📥 Baixar Relatório PDF</button>
+    <button class="btn-download-pdf" onclick="exportarCSV()">📄 Exportar CSV</button>
+    <button class="btn-download-pdf" onclick="exportarExcel()">📊 Exportar Excel</button>
+</div>
+		
+		
+		
+		
+    </section>
+</div>
+
+<script>
+    let instanciaGrafico = null;
+
+    /* ==========================
+       UTILITÁRIOS
+    ========================== */
+
+    function formatBRL(n) {
+        const v = Number(n) || 0;
+        return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    }
+
+    function parseCurrencyToNumber(currencyString) {
+        if (!currencyString) return 0;
+        const cleanString = String(currencyString)
+            .replace('R$', '')
+            .trim()
+            .replace(/\./g, '')
+            .replace(',', '.');
+        const number = parseFloat(cleanString);
+        return isNaN(number) ? 0 : number;
+    }
+
+    /* ==========================
+       NAVEGAÇÃO DE ABAS
+    ========================== */
+
+    function mudarAba(id, event) {
+        document.querySelectorAll('.conteudo-aba').forEach(c => c.classList.remove('ativa'));
+        document.querySelectorAll('.aba-btn').forEach(b => b.classList.remove('ativa'));
+        document.getElementById(id).classList.add('ativa');
+        if(event) event.currentTarget.classList.add('ativa');
+
+        // Agora não depende mais de entrar na aba concorrência:
+        // tudo é atualizado automaticamente a cada digitação.
+        atualizarTudo();
+    }
+
+    /* ==========================
+       LINHAS DINÂMICAS
+    ========================== */
+
+    function addLinha(tabela) {
+        const corpo = document.querySelector(`#${tabela} tbody`);
+        const tr = document.createElement('tr');
+
+        if(tabela === 'tblInvest') {
+            tr.innerHTML = `
+                <td><input type="text"></td>
+                <td><input type="number" class="qtd" value="1"></td>
+                <td><input type="number" class="val" value="0" step="0.01"
+                           onblur="this.value = parseFloat(this.value || 0).toFixed(2)"></td>
+                <td class="sub">R$ 0,00</td>
+                <td><button class="btn-del" onclick="remover(this)">❌</button></td>
+            `;
+        } else if(tabela === 'tblFixos') {
+            tr.innerHTML = `
+                <td><input type="text"></td>
+                <td><input type="number" class="val" value="0" step="0.01"
+                           onblur="this.value = parseFloat(this.value || 0).toFixed(2)"></td>
+                <td><button class="btn-del" onclick="remover(this)">❌</button></td>
+            `;
+        } else if(tabela === 'tblVendas') {
+            tr.innerHTML = `
+                <td><input type="text" class="nome"></td>
+                <td><input type="text"></td>
+                <td><input type="number" class="custo-ref" value="0" step="0.01"
+                           onblur="this.value = parseFloat(this.value || 0).toFixed(2)"></td>
+                <td><input type="number" class="venda" value="0" step="0.01"
+                           onblur="this.value = parseFloat(this.value || 0).toFixed(2)"></td>
+                <td><input type="number" class="qtd" value="0"></td>
+                <td><input type="number" class="c-var" value="0" step="0.01"
+                           onblur="this.value = parseFloat(this.value || 0).toFixed(2)"></td>
+                <td class="marg">R$ 0,00</td>
+                <td class="perc">0%</td>
+                <td><button class="btn-del" onclick="remover(this)">❌</button></td>
+            `;
+        }
+
+        corpo.appendChild(tr);
+        atualizarTudo();
+    }
+
+    function remover(btn) {
+        btn.closest('tr').remove();
+        atualizarTudo();
+    }
+
+    /* ==========================
+       CONCORRÊNCIA (SINCRONIZAÇÃO + AVALIAÇÃO)
+    ========================== */
+
+    function atualizarConcorrencia() {
+        const corpo = document.getElementById('corpoConc');
+        const linhasVendas = document.querySelectorAll('#tblVendas tbody tr');
+
+        // Ajusta número de linhas da concorrência para bater com vendas
+        // 1) Atualiza / cria linhas
+        linhasVendas.forEach((r, i) => {
+            const nome = r.querySelector('.nome')?.value || "Produto sem nome";
+            const preco = parseFloat(r.querySelector('.venda')?.value) || 0;
+
+            if (corpo.children[i]) {
+                corpo.children[i].children[0].innerText = nome;
+                corpo.children[i].children[1].innerText = `R$ ${preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            } else {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${nome}</td>
+                    <td>R$ ${preco.toFixed(2)}</td>
+                    <td><input type="number" class="c1" step="0.01"
+                               oninput="avaliarConc(this)"
+                               onblur="this.value=parseFloat(this.value||0).toFixed(2)"></td>
+                    <td><input type="number" class="c2" step="0.01"
+                               oninput="avaliarConc(this)"
+                               onblur="this.value=parseFloat(this.value||0).toFixed(2)"></td>
+                    <td class="status">Aguardando dados...</td>
+                `;
+                corpo.appendChild(tr);
+            }
+        });
+
+        // 2) Remove linhas excedentes (caso o usuário apague produto em vendas)
+        while (corpo.children.length > linhasVendas.length) {
+            corpo.removeChild(corpo.lastElementChild);
+        }
+    }
+
+    function avaliarConc(input) {
+        const linha = input.closest('tr');
+        const index = Array.from(linha.parentNode.children).indexOf(linha);
+
+        const linhaVenda = document.querySelectorAll('#tblVendas tbody tr')[index];
+        if (!linhaVenda) return;
+
+        const meuPreco = parseFloat(linhaVenda.querySelector('.venda')?.value) || 0;
+
+        const status = linha.querySelector('.status');
+        const c1 = parseFloat(linha.querySelector('.c1')?.value) || 0;
+        const c2 = parseFloat(linha.querySelector('.c2')?.value) || 0;
+
+        if (!c1 && !c2) {
+            status.innerText = "Aguardando dados...";
+            return;
+        }
+
+        const divisor = (c1 ? 1 : 0) + (c2 ? 1 : 0);
+        const media = divisor ? (c1 + c2) / divisor : 0;
+
+        if (media <= 0) {
+            status.innerText = "Aguardando dados...";
+            return;
+        }
+
+        const diffPerc = ((meuPreco - media) / media) * 100;
+
+        if (Math.abs(diffPerc) <= 2) {
+            status.innerHTML = "ℹ️ <span style='color:#555'>Preço alinhado à média de mercado (±2%)</span>";
+        } else if (diffPerc < 0) {
+            status.innerHTML = "✅ <span style='color:green'>Preço competitivo: " + Math.abs(diffPerc).toFixed(1) + "% abaixo da média de mercado</span>";
+        } else {
+            status.innerHTML = "❌ <span style='color:red'>Preço não competitivo: " + diffPerc.toFixed(1) + "% acima da média de mercado</span>";
+        }
+    }
+
+    function reavaliarTodasConcorrencias() {
+        const linhasConc = document.querySelectorAll('#tblConc tbody tr');
+        linhasConc.forEach(linha => {
+            const c1 = linha.querySelector('.c1');
+            const c2 = linha.querySelector('.c2');
+
+            const v1 = parseFloat(c1?.value) || 0;
+            const v2 = parseFloat(c2?.value) || 0;
+
+            if (v1 || v2) {
+                avaliarConc(c1 || c2);
+            }
+        });
+    }
+
+    /* ==========================
+       ATUALIZAÇÃO GLOBAL (TODAS AS ABAS)
+       - Resolve seu problema: qualquer mudança em Vendas atualiza Concorrência e Resultado.
+       - Também evita listeners duplicados usando delegação de eventos.
+    ========================== */
+
+    function atualizarTudo() {
+        // 1) INVESTIMENTO
+        let invTotal = 0;
+        document.querySelectorAll('#tblInvest tbody tr').forEach(r => {
+            const qtd = parseFloat(r.querySelector('.qtd')?.value) || 0;
+            const val = parseFloat(r.querySelector('.val')?.value) || 0;
+            const v = qtd * val;
+            invTotal += v;
+            r.querySelector('.sub').innerText = formatBRL(v);
+        });
+        document.getElementById('totInvest').innerText = formatBRL(invTotal);
+
+        // 2) FIXOS
+        let fixosTotal = 0;
+        document.querySelectorAll('#tblFixos tbody tr').forEach(r => {
+            fixosTotal += parseFloat(r.querySelector('.val')?.value || 0);
+        });
+        document.getElementById('totFixos').innerText = formatBRL(fixosTotal);
+
+        // 3) VENDAS
+        let fatTotal = 0, margemTotal = 0, varTotal = 0;
+        document.querySelectorAll('#tblVendas tbody tr').forEach(r => {
+            const pV = parseFloat(r.querySelector('.venda')?.value || 0);
+            const cR = parseFloat(r.querySelector('.custo-ref')?.value || 0);
+            const q  = parseFloat(r.querySelector('.qtd')?.value || 0);
+            const cV = parseFloat(r.querySelector('.c-var')?.value || 0);
+
+            const custoVarUnit = cR + cV;
+            const receita = pV * q;
+            const custoVarTotal = custoVarUnit * q;
+            const margem = receita - custoVarTotal;
+
+            if (pV < custoVarUnit && pV > 0) r.querySelector('.venda').style.background = "#FEE2E2";
+            else r.querySelector('.venda').style.background = "white";
+
+            fatTotal += receita;
+            margemTotal += margem;
+            varTotal += custoVarTotal;
+
+            r.querySelector('.marg').innerText = formatBRL(margem);
+        });
+
+        document.getElementById('totFat').innerText = formatBRL(fatTotal);
+        document.getElementById('totMargem').innerText = formatBRL(margemTotal);
+
+        // 4) Participação de margem por produto
+        document.querySelectorAll('#tblVendas tbody tr').forEach(r => {
+            const margemTexto = r.querySelector('.marg')?.innerText || "R$ 0,00";
+            const margemProduto = parseCurrencyToNumber(margemTexto);
+
+            const percentual = margemTotal > 0 ? (margemProduto / margemTotal) * 100 : 0;
+            r.querySelector('.perc').innerText = percentual.toFixed(2).replace('.', ',') + '%';
+        });
+
+        // 5) RESULTADO
+        const lucro = margemTotal - fixosTotal;
+
+        // Capital de giro (mantido)
+        const capitalGiro1Mes = fixosTotal + varTotal;
+        const capitalGiro3Meses = capitalGiro1Mes * 3;
+        const capitalGiro4Meses = capitalGiro1Mes * 4;
+
+        document.getElementById('resFat').innerText = formatBRL(fatTotal);
+        document.getElementById('resCustoOp').innerText = formatBRL(fixosTotal + varTotal);
+        document.getElementById('resLucro').innerText = formatBRL(lucro);
+        document.getElementById('resInvTotal').innerText = formatBRL(invTotal);
+        document.getElementById('cardLucro').style.background = lucro >= 0 ? 'var(--cor-vendas)' : 'var(--cor-fixos)';
+
+        // 6) NOVO: Ponto de equilíbrio em R$
+        // Conceito: Faturamento necessário para cobrir custos fixos, dado o % de margem de contribuição.
+        // MC% = margemTotal / fatTotal
+        // P.E. (R$) = fixosTotal / MC%
+        let pe = 0;
+        const mcPerc = (fatTotal > 0) ? (margemTotal / fatTotal) : 0;
+
+        if (fixosTotal > 0 && mcPerc > 0) pe = fixosTotal / mcPerc;
+        else pe = 0;
+
+        document.getElementById('resPE').innerText = formatBRL(pe);
+
+        // 7) Parecer (mantido e atualizado)
+        const analise = document.getElementById('textoAnalise');
+        if(fatTotal === 0) {
+            analise.innerText = "Aguardando preenchimento das tabelas...";
+        } else if(lucro <= 0) {
+            analise.innerHTML = `
+                ❌ <b>Resultado operacional negativo:</b> O empreendimento não retorna o capital investido e acumula um déficit mensal de
+                <b>${formatBRL(Math.abs(lucro))}</b>.<br><br>
+                <b>Ponto de Equilíbrio (R$):</b> ${formatBRL(pe)} (faturamento necessário para cobrir custos fixos, sem lucro).
+            `;
+        } else {
+            const payback = invTotal / lucro;
+            analise.innerHTML = `
+                ✅ <b>Viabilidade confirmada:</b><br><br>
+
+                • Lucro mensal estimado: <b>${formatBRL(lucro)}</b><br><br>
+
+                • Ponto de Equilíbrio (R$): <b>${formatBRL(pe)}</b><br><br>
+
+                • Capital de giro mínimo (1º mês – vendas à vista): <b>${formatBRL(capitalGiro1Mes)}</b><br><br>
+
+                <i>Caso o negócio venda a prazo ou parcelado:</i><br>
+                • Capital de giro para 3 meses: <b>${formatBRL(capitalGiro3Meses)}</b><br>
+                • Capital de giro para 4 meses: <b>${formatBRL(capitalGiro4Meses)}</b><br><br>
+
+                • Prazo estimado de retorno do investimento: <b>${payback.toFixed(1)} meses</b>
+            `;
+        }
+
+        // 8) Gráfico
+        gerarGrafico(fatTotal, fixosTotal + varTotal, lucro);
+
+        // 9) SINCRONIZAÇÃO AUTOMÁTICA DA CONCORRÊNCIA (o seu problema)
+        atualizarConcorrencia();
+        reavaliarTodasConcorrencias();
+    }
+
+    function gerarGrafico(f, c, l) {
+        const canvas = document.getElementById('graficoPerformance');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if(instanciaGrafico) instanciaGrafico.destroy();
+
+        instanciaGrafico = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Faturamento', 'Custos', 'Lucro'],
+                datasets: [{
+                    data: [f, c, l],
+                    backgroundColor: ['#2563EB', '#DC2626', '#059669']
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    /* ==========================
+       GERAÇÃO DE PDF (MANTIDA)
+       - Mantive seu gerador de PDF completo.
+       - Acrescentei o Ponto de Equilíbrio na seção "Resultados Financeiros".
+    ========================== */
+
+    async function gerarPDF() {
+        try {
+            const { jsPDF } = window.jspdf;
+            if (!jsPDF) {
+                alert('Erro: Biblioteca jsPDF não carregada.');
+                return;
+            }
+
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+
+            const nomeEmpresa = document.getElementById('campoEmpresa')?.value || "Sem nome";
+            const empreendedores = document.getElementById('campoDono')?.value || "Não informado";
+            const contato = document.getElementById('campoContatoOficial')?.value || "Não informado";
+            const responsavel = document.getElementById('campoResponsavel')?.value || "Não informado";
+            const contatoResp = document.getElementById('campoContatoResp')?.value || "Não informado";
+
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("RELATÓRIO DE VIABILIDADE DE NEGÓCIO", 105, 15, { align: 'center' });
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            doc.text(`Empreendimento: ${nomeEmpresa}`, 15, 30);
+            doc.text(`Empreendedores: ${empreendedores}`, 15, 36);
+            doc.text(`Contato: ${contato}`, 15, 42);
+            doc.text(`Responsável: ${responsavel}`, 100, 30);
+            doc.text(`Contato: ${contatoResp}`, 100, 36);
+            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 100, 42);
+
+            let y = 50;
+            const lineHeight = 5.5;
+
+            const addPageIfNeeded = (extraSpace = 0) => {
+                if (y + extraSpace > 270) {
+                    doc.addPage();
+                    y = 20;
+                    return true;
+                }
+                return false;
+            };
+
+            const formatCurrency = (value) => {
+                if (!value && value !== 0) return "R$ 0,00";
+                const num = typeof value === 'string'
+                    ? parseFloat(value.replace('R$', '').replace(/\./g, '').replace(',', '.').trim())
+                    : parseFloat(value);
+                return isNaN(num) ? "R$ 0,00" : num.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                });
+            };
+
+            // ========== 1. INVESTIMENTO INICIAL ==========
+            addPageIfNeeded(20);
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("1. INVESTIMENTO INICIAL", 15, y);
+            y += 10;
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+
+            const investRows = document.querySelectorAll('#tblInvest tbody tr');
+            let hasInvestData = false;
+            let investIndex = 1;
+
+            if (investRows.length === 0) {
+                doc.text("Nenhum item cadastrado", 20, y);
+                y += lineHeight + 2;
+            } else {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text("Item", 20, y);
+                doc.text("Qtd", 100, y);
+                doc.text("Valor Unit.", 125, y);
+                doc.text("Subtotal", 170, y, { align: 'right' });
+                y += 6;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.2);
+                doc.line(15, y, 195, y);
+                y += 4;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+
+                investRows.forEach((row) => {
+                    addPageIfNeeded(15);
+
+                    const descInput = row.querySelector('input[type="text"]');
+                    const qtdInput = row.querySelector('.qtd');
+                    const valInput = row.querySelector('.val');
+
+                    const desc = descInput?.value || "";
+                    const qtd = qtdInput?.value || "1";
+                    const valor = parseFloat(valInput?.value) || 0;
+                    const subtotal = (parseFloat(qtd) * valor) || 0;
+
+                    if (desc.trim() !== "") {
+                        hasInvestData = true;
+
+                        doc.setFont("helvetica", "bold");
+                        doc.text(`${investIndex}.`, 20, y);
+                        doc.setFont("helvetica", "normal");
+
+                        doc.text(desc, 27, y);
+
+                        doc.text(qtd, 100, y);
+                        doc.text(formatCurrency(valor), 125, y);
+                        doc.text(formatCurrency(subtotal), 170, y, { align: 'right' });
+
+                        y += lineHeight + 2;
+                        investIndex++;
+                    }
+                });
+
+                if (hasInvestData) {
+                    addPageIfNeeded(15);
+                    const totalInvestElement = document.getElementById('totInvest');
+                    const totalInvest = totalInvestElement?.textContent || "R$ 0,00";
+
+                    doc.setDrawColor(0, 0, 0);
+                    doc.setLineWidth(0.3);
+                    doc.line(15, y, 195, y);
+                    y += 6;
+
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`TOTAL DO INVESTIMENTO: ${totalInvest}`, 150, y, { align: 'right' });
+                    y += 12;
+                } else {
+                    doc.text("Nenhum item cadastrado", 20, y);
+                    y += lineHeight + 2;
+                }
+            }
+
+            // ========== 2. CUSTOS FIXOS MENSAIS ==========
+            addPageIfNeeded(30);
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("2. CUSTOS FIXOS MENSAIS", 15, y);
+            y += 10;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text("Descrição", 20, y);
+            doc.text("Valor Mensal", 170, y, { align: 'right' });
+            y += 6;
+
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.2);
+            doc.line(15, y, 195, y);
+            y += 4;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+
+            const fixosRows = document.querySelectorAll('#tblFixos tbody tr');
+            let hasFixosData = false;
+            let fixosIndex = 1;
+
+            if (fixosRows.length === 0) {
+                doc.text("Nenhum custo cadastrado", 20, y);
+                y += lineHeight + 2;
+            } else {
+                fixosRows.forEach((row) => {
+                    addPageIfNeeded(15);
+
+                    const descInput = row.querySelector('input[type="text"]');
+                    const valInput = row.querySelector('.val');
+
+                    const desc = descInput?.value || "";
+                    const valor = parseFloat(valInput?.value) || 0;
+
+                    if (desc.trim() !== "") {
+                        hasFixosData = true;
+
+                        doc.setFont("helvetica", "bold");
+                        doc.text(`${fixosIndex}.`, 20, y);
+                        doc.setFont("helvetica", "normal");
+
+                        doc.text(desc, 27, y);
+                        doc.text(formatCurrency(valor), 170, y, { align: 'right' });
+
+                        y += lineHeight + 2;
+                        fixosIndex++;
+                    }
+                });
+
+                if (hasFixosData) {
+                    addPageIfNeeded(15);
+                    const totalFixosElement = document.getElementById('totFixos');
+                    const totalFixos = totalFixosElement?.textContent || "R$ 0,00";
+
+                    doc.setDrawColor(0, 0, 0);
+                    doc.setLineWidth(0.3);
+                    doc.line(15, y, 195, y);
+                    y += 6;
+
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`TOTAL DE CUSTOS FIXOS: ${totalFixos}`, 150, y, { align: 'right' });
+                    y += 12;
+                } else {
+                    doc.text("Nenhum custo cadastrado", 20, y);
+                    y += lineHeight + 2;
+                }
+            }
+
+            // ========== 3. VENDAS E MARGEM ==========
+            addPageIfNeeded(20);
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("3. VENDAS E MARGEM", 15, y);
+            y += 8;
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+
+            const vendasRows = document.querySelectorAll('#tblVendas tbody tr');
+            let hasVendasData = false;
+
+            if (vendasRows.length === 0) {
+                doc.text("Nenhum produto cadastrado", 20, y);
+                y += lineHeight + 2;
+            } else {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text("Produto", 20, y);
+                doc.text("Custo Unit.", 70, y);
+                doc.text("Preço Venda", 95, y);
+                doc.text("Qtd", 120, y);
+                doc.text("C.Var Unit.", 140, y);
+                doc.text("Margem Unit.", 165, y);
+                y += lineHeight + 1;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.2);
+                doc.line(15, y, 195, y);
+                y += 4;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+
+                vendasRows.forEach((row, index) => {
+                    addPageIfNeeded(15);
+
+                    const nomeInput = row.querySelector('.nome');
+                    const custoInput = row.querySelector('.custo-ref');
+                    const precoInput = row.querySelector('.venda');
+                    const qtdInput = row.querySelector('.qtd');
+                    const cvarInput = row.querySelector('.c-var');
+
+                    const nome = nomeInput?.value || "";
+                    const custo = parseFloat(custoInput?.value) || 0;
+                    const preco = parseFloat(precoInput?.value) || 0;
+                    const qtd = parseFloat(qtdInput?.value) || 0;
+                    const cvar = parseFloat(cvarInput?.value) || 0;
+                    const margemUnit = preco - custo - cvar;
+
+                    if (nome.trim() !== "") {
+                        hasVendasData = true;
+
+                        const nomeDisplay = nome.length > 35 ? nome.substring(0, 22) + "..." : nome;
+                        doc.text(`${index + 1}. ${nomeDisplay}`, 20, y);
+
+                        doc.text(formatCurrency(custo), 70, y);
+                        doc.text(formatCurrency(preco), 95, y);
+                        doc.text(`${qtd}`, 120, y);
+                        doc.text(formatCurrency(cvar), 140, y);
+
+                        if (margemUnit >= 0) {
+                            doc.setTextColor(0, 128, 0);
+                            doc.text(formatCurrency(margemUnit), 165, y);
+                        } else {
+                            doc.setTextColor(220, 38, 38);
+                            doc.text(`-${formatCurrency(Math.abs(margemUnit))}`, 165, y);
+                        }
+                        doc.setTextColor(0, 0, 0);
+
+                        y += lineHeight + 1;
+                    }
+                });
+
+                if (hasVendasData) {
+                    addPageIfNeeded(15);
+                    doc.setDrawColor(0, 0, 0);
+                    doc.setLineWidth(0.3);
+                    doc.line(15, y, 195, y);
+                    y += 4;
+
+                    const totalFat = document.getElementById('totFat')?.textContent || "R$ 0,00";
+                    const totalMargem = document.getElementById('totMargem')?.textContent || "R$ 0,00";
+
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`FATURAMENTO TOTAL: ${totalFat}`, 120, y, { align: 'right' });
+                    y += lineHeight + 1;
+
+                    const margemNum = parseCurrencyToNumber(totalMargem);
+                    if (margemNum >= 0) doc.setTextColor(0, 128, 0);
+                    else doc.setTextColor(220, 38, 38);
+
+                    doc.text(`MARGEM TOTAL: ${totalMargem}`, 120, y, { align: 'right' });
+                    doc.setTextColor(0, 0, 0);
+                    y += 10;
+                } else {
+                    y += lineHeight;
+                }
+            }
+
+            // ========== 4. CONCORRÊNCIA ==========
+            addPageIfNeeded(20);
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("4. ANÁLISE DE CONCORRÊNCIA", 15, y);
+            y += 8;
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+
+            const concRows = document.querySelectorAll('#tblConc tbody tr');
+            let hasConcData = false;
+
+            if (concRows.length === 0) {
+                doc.text("Nenhum dado de concorrência preenchido", 20, y);
+                y += lineHeight + 2;
+            } else {
+                for (const row of concRows) {
+                    const c1 = row.querySelector('.c1')?.value;
+                    const c2 = row.querySelector('.c2')?.value;
+                    if (c1 || c2) { hasConcData = true; break; }
+                }
+
+                if (!hasConcData) {
+                    doc.text("Nenhum dado de concorrência preenchido", 20, y);
+                    y += lineHeight + 2;
+                } else {
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(10);
+                    doc.text("Produto", 20, y);
+                    doc.text("Meu Preço", 80, y);
+                    doc.text("Conc. 1", 120, y);
+                    doc.text("Conc. 2", 160, y);
+                    y += lineHeight + 1;
+
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.2);
+                    doc.line(15, y, 195, y);
+                    y += 4;
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(11);
+
+                    concRows.forEach((row, index) => {
+                        addPageIfNeeded(15);
+
+                        const produto = row.cells[0]?.textContent || "";
+                        const meuPreco = row.cells[1]?.textContent || "";
+                        const conc1 = row.querySelector('.c1')?.value ? parseFloat(row.querySelector('.c1').value) : null;
+                        const conc2 = row.querySelector('.c2')?.value ? parseFloat(row.querySelector('.c2').value) : null;
+                        const statusEl = row.querySelector('.status');
+                        const status = statusEl?.textContent || statusEl?.innerText || "";
+
+                        if (produto && produto !== "Produto sem nome" && (conc1 || conc2)) {
+                            doc.text(`${index + 1}. ${produto}`, 20, y);
+                            doc.text(meuPreco, 80, y);
+                            if (conc1 && conc1 > 0) doc.text(`R$ ${conc1.toFixed(2)}`, 120, y);
+                            if (conc2 && conc2 > 0) doc.text(`R$ ${conc2.toFixed(2)}`, 160, y);
+
+                            y += lineHeight + 1;
+
+                            if (status && status !== "Aguardando dados...") {
+                                const statusClean = status.replace(/[✓✗✅❌ℹ️]/g, '').trim();
+                                if (statusClean.length > 0) {
+                                    if (statusClean.includes("Preço competitivo") && statusClean.includes("abaixo")) doc.setTextColor(0, 128, 0);
+                                    else if (statusClean.includes("Preço não competitivo") && statusClean.includes("acima")) doc.setTextColor(255, 0, 0);
+                                    else if (statusClean.includes("Preço alinhado") || statusClean.includes("alinhado")) doc.setTextColor(150, 150, 150);
+                                    else doc.setTextColor(100, 100, 100);
+
+                                    doc.setFontSize(10);
+                                    doc.text(statusClean, 25, y);
+                                    doc.setFontSize(11);
+                                    doc.setTextColor(0, 0, 0);
+                                    y += lineHeight + 1;
+                                }
+                            }
+
+                            y += 2;
+                        }
+                    });
+
+                    y += 5;
+                }
+            }
+
+            // ========== 5. RESULTADOS FINANCEIROS ==========
+            addPageIfNeeded(30);
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("5. RESULTADOS FINANCEIROS", 15, y);
+            y += 10;
+
+            const faturamento = document.getElementById('resFat')?.textContent || "R$ 0,00";
+            const custoOp = document.getElementById('resCustoOp')?.textContent || "R$ 0,00";
+            const lucroTxt = document.getElementById('resLucro')?.textContent || "R$ 0,00";
+            const investimento = document.getElementById('resInvTotal')?.textContent || "R$ 0,00";
+            const peTxt = document.getElementById('resPE')?.textContent || "R$ 0,00";
+
+            const faturamentoNum = parseCurrencyToNumber(faturamento);
+            const custoOpNum = parseCurrencyToNumber(custoOp);
+            const lucroNum = parseCurrencyToNumber(lucroTxt);
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("RESUMO FINANCEIRO", 15, y);
+            y += 8;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+
+            doc.text("• Faturamento Mensal:", 20, y);
+            doc.text(faturamento, 170, y, { align: 'right' });
+            y += lineHeight + 1;
+
+            doc.text("• Custo Operacional Total:", 20, y);
+            doc.text(custoOp, 170, y, { align: 'right' });
+            y += lineHeight + 1;
+
+            doc.text("• Lucro Líquido Mensal:", 20, y);
+            if (lucroNum >= 0) doc.setTextColor(0, 128, 0);
+            else doc.setTextColor(220, 38, 38);
+            doc.text(lucroTxt, 170, y, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+            y += lineHeight + 1;
+
+            doc.text("• Investimento Inicial:", 20, y);
+            doc.text(investimento, 170, y, { align: 'right' });
+            y += lineHeight + 1;
+
+            // NOVO no PDF: Ponto de Equilíbrio
+            doc.text("• Ponto de Equilíbrio (R$):", 20, y);
+            doc.text(peTxt, 170, y, { align: 'right' });
+            y += lineHeight + 3;
+
+            let margemPercentual = 0;
+            if (faturamentoNum > 0) margemPercentual = (lucroNum / faturamentoNum) * 100;
+
+            const margemText = isNaN(margemPercentual) ? "0,0%" : margemPercentual.toFixed(1).replace('.', ',') + "%";
+            doc.text(`• Margem de Lucro: ${margemText}`, 20, y);
+            y += lineHeight + 5;
+
+            // ========== 6. PARECER TÉCNICO ==========
+            addPageIfNeeded(40);
+            doc.setTextColor(30, 58, 138);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("6. PARECER TÉCNICO", 15, y);
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+
+            const parecerElement = document.getElementById('textoAnalise');
+            let parecerTexto = "Aguardando dados...";
+
+            if (parecerElement) {
+                parecerTexto = parecerElement.innerText || parecerElement.textContent || "Aguardando dados...";
+                parecerTexto = parecerTexto.replace(/^['"`\*]/, '').trim();
+                parecerTexto = parecerTexto.replace(/:\s*/g, ':\n');
+                parecerTexto = parecerTexto.replace(/•/g, '\n•');
+                parecerTexto = parecerTexto.replace(/\n+/g, '\n');
+            }
+
+            const linhas = parecerTexto.split('\n');
+            linhas.forEach(linha => {
+                if (linha.trim() === '') { y += lineHeight; return; }
+                const linhasQuebradas = doc.splitTextToSize(linha, 170);
+                linhasQuebradas.forEach(l => {
+                    addPageIfNeeded(lineHeight);
+                    doc.text(l.trim(), 20, y);
+                    y += lineHeight;
+                });
+            });
+
+            // ========== RODAPÉ EM TODAS AS PÁGINAS ==========
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.3);
+                doc.line(15, 280, 195, 280);
+
+                doc.setTextColor(100, 100, 100);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.text("Relatório Gerado Automaticamente - João Batista - jbatist7@gmail.com", 105, 285, { align: 'center' });
+                doc.text(`Página ${i} de ${totalPages}`, 105, 295, { align: 'center' });
+            }
+
+            const fileName = nomeEmpresa && nomeEmpresa !== "Sem nome"
+                ? `Plano_Negocio_${nomeEmpresa.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_')}.pdf`
+                : 'Plano_de_Negocio.pdf';
+
+            doc.save(fileName);
+
+        } catch (error) {
+            console.error('Erro detalhado ao gerar PDF:', error);
+            alert(`Erro ao gerar PDF: ${error.message}. Verifique o console para mais detalhes.`);
+        }
+    }
+
+    /* ==========================
+       EVENTOS (SEM DUPLICAÇÃO)
+       - Delegação: qualquer input/alteração no documento chama atualizarTudo()
+    ========================== */
+
+    document.addEventListener('input', (e) => {
+        const el = e.target;
+        if (el && (el.matches('input') || el.matches('select') || el.matches('textarea'))) {
+            atualizarTudo();
+        }
+    });
+
+    document.addEventListener('change', (e) => {
+        const el = e.target;
+        if (el && (el.matches('input') || el.matches('select') || el.matches('textarea'))) {
+            atualizarTudo();
+        }
+    });
+
+    window.onload = () => {
+        addLinha('tblInvest');
+        addLinha('tblFixos');
+        addLinha('tblVendas');
+        atualizarTudo();
+    };
+	
+	
+	/* ==========================
+   EXPORTAÇÃO CSV / EXCEL
+   - CSV: gera múltiplas "abas" como seções no mesmo arquivo (cada tabela separada)
+   - Excel: gera um .xls com várias tabelas (Excel abre direto)
+========================== */
+
+function getNomeArquivoBase() {
+    const nomeEmpresa = document.getElementById('campoEmpresa')?.value?.trim();
+    if (!nomeEmpresa) return "Plano_de_Negocio";
+    return ("Plano_Negocio_" + nomeEmpresa)
+        .replace(/[^\w\s]/gi, '')
+        .replace(/\s+/g, '_');
+}
+
+function escapeCSV(value) {
+    // Converte null/undefined para vazio e escapa aspas
+    const s = (value === null || value === undefined) ? "" : String(value);
+    const needsQuotes = /[",;\n\r]/.test(s);
+    const cleaned = s.replace(/"/g, '""');
+    return needsQuotes ? `"${cleaned}"` : cleaned;
+}
+
+function tableToMatrix(tableEl) {
+    // Retorna array de linhas, cada linha array de colunas (texto)
+    const rows = [];
+    tableEl.querySelectorAll('tr').forEach(tr => {
+        const cols = [];
+        tr.querySelectorAll('th, td').forEach(cell => {
+            // Se tiver input dentro, pega o valor do input; senão pega texto
+            const input = cell.querySelector('input, select, textarea');
+            if (input) cols.push(input.value);
+            else cols.push(cell.innerText.replace(/\s+/g, ' ').trim());
+        });
+        // remove linha completamente vazia (opcional)
+        const isAllEmpty = cols.every(c => !String(c).trim());
+        if (!isAllEmpty) rows.push(cols);
+    });
+    return rows;
+}
+
+function matrixToCSV(matrix) {
+    // Separador ; (muito comum no Excel pt-BR)
+    return matrix
+        .map(row => row.map(escapeCSV).join(';'))
+        .join('\n');
+}
+
+function baixarArquivo(texto, mimeType, nomeArquivo) {
+    const blob = new Blob([texto], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArquivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportarCSV() {
+    // Gera um único CSV “multi-seções” com todas as tabelas principais
+    const base = getNomeArquivoBase();
+    const tables = [
+        { titulo: "INVESTIMENTO_INICIAL", el: document.getElementById('tblInvest') },
+        { titulo: "CUSTOS_FIXOS", el: document.getElementById('tblFixos') },
+        { titulo: "VENDAS_E_MARGEM", el: document.getElementById('tblVendas') },
+        { titulo: "CONCORRENCIA", el: document.getElementById('tblConc') }
+    ].filter(t => t.el);
+
+    const linhas = [];
+    linhas.push(`${base}`);
+    linhas.push(`Exportado em;${new Date().toLocaleString('pt-BR')}`);
+    linhas.push('');
+
+    // Também exporta um “resumo” dos indicadores do Resultado
+    const resumo = [
+        ["RESUMO", ""],
+        ["Faturamento", document.getElementById('resFat')?.innerText || ""],
+        ["Custo Operacional", document.getElementById('resCustoOp')?.innerText || ""],
+        ["Lucro Líquido", document.getElementById('resLucro')?.innerText || ""],
+        ["Investimento Inicial", document.getElementById('resInvTotal')?.innerText || ""],
+        ["Ponto de Equilíbrio (R$)", document.getElementById('resPE')?.innerText || ""],
+    ];
+    linhas.push("=== RESUMO ===");
+    linhas.push(matrixToCSV(resumo));
+    linhas.push('');
+
+    tables.forEach(t => {
+        linhas.push(`=== ${t.titulo} ===`);
+        const matrix = tableToMatrix(t.el);
+        linhas.push(matrixToCSV(matrix));
+        linhas.push(''); // linha em branco entre seções
+    });
+
+    // BOM para Excel: UTF-8 com BOM
+    const csvComBOM = '\uFEFF' + linhas.join('\n');
+    baixarArquivo(csvComBOM, 'text/csv;charset=utf-8', `${base}.csv`);
+}
+
+function exportarExcel() {
+    // Gera um .xls (HTML) com várias tabelas
+    const base = getNomeArquivoBase();
+
+    const titulo = base.replace(/_/g, ' ');
+    const data = new Date().toLocaleString('pt-BR');
+
+    const html =
+`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${titulo}</title>
+<style>
+    body { font-family: Arial, sans-serif; }
+    h1 { color: #1E3A8A; }
+    h2 { margin-top: 20px; color: #0F172A; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 18px; }
+    th, td { border: 1px solid #CBD5E1; padding: 6px; font-size: 12px; }
+    th { background: #F8FAFC; }
+    .nota { color: #475569; font-size: 12px; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+    <h1>${titulo}</h1>
+    <div class="nota">Exportado em: ${data}</div>
+
+    <h2>Resumo</h2>
+    <table>
+        <tr><th>Indicador</th><th>Valor</th></tr>
+        <tr><td>Faturamento</td><td>${document.getElementById('resFat')?.innerText || ""}</td></tr>
+        <tr><td>Custo Operacional</td><td>${document.getElementById('resCustoOp')?.innerText || ""}</td></tr>
+        <tr><td>Lucro Líquido</td><td>${document.getElementById('resLucro')?.innerText || ""}</td></tr>
+        <tr><td>Investimento Inicial</td><td>${document.getElementById('resInvTotal')?.innerText || ""}</td></tr>
+        <tr><td>Ponto de Equilíbrio (R$)</td><td>${document.getElementById('resPE')?.innerText || ""}</td></tr>
+    </table>
+
+    <h2>Investimento Inicial</h2>
+    ${cloneTableAsStaticHTML(document.getElementById('tblInvest'))}
+
+    <h2>Custos Fixos</h2>
+    ${cloneTableAsStaticHTML(document.getElementById('tblFixos'))}
+
+    <h2>Vendas e Margem</h2>
+    ${cloneTableAsStaticHTML(document.getElementById('tblVendas'))}
+
+    <h2>Concorrência</h2>
+    ${cloneTableAsStaticHTML(document.getElementById('tblConc'))}
+</body>
+</html>`;
+
+    // MIME para Excel (abre como planilha)
+    baixarArquivo(html, 'application/vnd.ms-excel;charset=utf-8', `${base}.xls`);
+}
+
+function cloneTableAsStaticHTML(tableEl) {
+    if (!tableEl) return "<div>(Tabela não encontrada)</div>";
+
+    // Clona e transforma inputs em texto fixo para exportação
+    const clone = tableEl.cloneNode(true);
+
+    clone.querySelectorAll('input, select, textarea').forEach(inp => {
+        const td = inp.closest('td') || inp.parentElement;
+        const valor = (inp.value ?? '').toString();
+        const span = document.createElement('span');
+        span.textContent = valor;
+        inp.replaceWith(span);
+    });
+
+    return clone.outerHTML;
+}
+</script>
+
+</body>
+</html>
