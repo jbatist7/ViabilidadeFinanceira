@@ -266,10 +266,10 @@ Clique <a href="https://sites.google.com/view/simpta-joao/viabilidadefinanceira"
                 </a>
             </p>
       
-		<p style="font-size:0.75rem; color:#94A3B8; margin-top:20px; text-align:right;">
-    Acessos ao sistema:
-    <img src="https://visitor-badge.laobi.icu/badge?page_id=viabilidadefinanceira" />
+<p style="font-size:0.75rem; color:#94A3B8; margin-top:20px; text-align:right;">
+    Acessos ao sistema: <span id="contador-visitas">...</span>
 </p>
+
 			  </div>
     </section>
 
@@ -1498,6 +1498,17 @@ function cloneTableAsStaticHTML(tableEl) {
 }
 </script>
 
+	<script>
+fetch('https://api.countapi.xyz/hit/viabilidadefinanceira/acessos')
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('contador-visitas').innerText = data.value;
+  })
+  .catch(() => {
+    document.getElementById('contador-visitas').innerText = '-';
+  });
+</script>
+	
 </body>
 
 </html>
